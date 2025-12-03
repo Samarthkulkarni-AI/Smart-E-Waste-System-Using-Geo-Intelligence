@@ -1,0 +1,8 @@
+.env
+venv/
+__pycache__/
+instance/
+.vscode/
+completed_requests.csv
+*.pyc
+__pycache__

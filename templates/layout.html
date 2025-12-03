@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>E-Waste Management</title>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhmppM/tc0jP8yTqGqxS6JTcAXUOYBEiEPLI="
+    crossorigin=""/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="crossorigin="">
+    </script>
+</head>
+<body>
+
+    <div class="navbar">
+        <!-- LEFT SIDE: Logo + Platform Name -->
+        <div class="navbar-left">
+            <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Logo" class="nav-logo">
+            <span class="nav-title">ECO CHAT</span>
+        </div>
+
+        <!-- RIGHT SIDE: Notification + Links -->
+        <div class="navbar-right">
+            {% if current_user.is_authenticated %}
+                <!-- Notification Bell -->
+                <a id="notification-bell" class="notification-bell">
+                    <span class="bell-icon">🔔</span>
+                    {% if unread_notifications|length > 0 %}
+                        <span class="dot"></span>
+                    {% endif %}
+                </a>
+
+                <!-- Home moved between Bell and Switch -->
+                <a href="{{ url_for('index') }}">Home</a>
+
+                <!-- Switch Profile -->
+                <a href="{{ url_for('select_profile') }}">Switch/Add Profile</a>
+
+                <!-- Logout -->
+                {% if session.active_profile_id %}
+                    <a href="{{ url_for('logout') }}">Logout ({{ get_active_profile().profile_name }})</a>
+                {% else %}
+                    <a href="{{ url_for('logout') }}">Logout</a>
+                {% endif %}
+            {% else %}
+                <a href="{{ url_for('login') }}">Login</a>
+                <a href="{{ url_for('register') }}">Register</a>
+            {% endif %}
+        </div>
+    </div>
+
+
+    {% if current_user.is_authenticated %}
+    <div id="notification-dropdown" class="notification-dropdown">
+        <div class="n-header">Notifications</div>
+        {% if unread_notifications %}
+            {% for notification in unread_notifications %}
+                <a href="{{ notification.link_url }}">
+                    <div class="n-message">{{ notification.message }}</div>
+                    <div class="n-timestamp">{{ notification.timestamp.strftime('%Y-%m-%d %H:%M') }}</div>
+                </a>
+            {% endfor %}
+        {% else %}
+            <a href="#" style="pointer-events: none;">
+                <div class="n-message">No unread notifications.</div>
+            </a>
+        {% endif %}
+    </div>
+    {% endif %}
+    <div class="content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var bell = document.getElementById('notification-bell');
+            var dropdown = document.getElementById('notification-dropdown');
+            var dot = document.querySelector('.notification-bell .dot');
+
+            if (bell) {
+                bell.onclick = function(event) {
+                    event.stopPropagation();
+                    // Toggle the dropdown
+                    var isHidden = dropdown.style.display === 'none' || dropdown.style.display === '';
+                    dropdown.style.display = isHidden ? 'block' : 'none';
+
+                    // If we just opened it and the dot exists, mark as read
+                    if (isHidden && dot) {
+                        // Mark as read on the server
+                        fetch("{{ url_for('mark_notifications_as_read') }}", {
+                            method: 'POST'
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Remove the dot visually
+                                dot.style.display = 'none';
+                            }
+                        });
+                    }
+                }
+            }
+
+            // Close dropdown if clicking outside
+            document.onclick = function(event) {
+                if (dropdown && dropdown.style.display === 'block') {
+                    if (!dropdown.contains(event.target) && !bell.contains(event.target)) {
+                        dropdown.style.display = 'none';
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

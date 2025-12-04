@@ -1,4 +1,4 @@
-# E-Waste Management System
+# E-Waste Management Platform 
 
 A comprehensive web application for managing electronic waste disposal and collection. This platform connects **Disposers** (individuals or organizations with e-waste) with **Collectors** (recyclers or collection agencies) to facilitate efficient and eco-friendly e-waste management.
 
@@ -74,12 +74,14 @@ pip install -r requirements.txt
     ```sql
     CREATE EXTENSION postgis;
     ```
-4.  Update the database URI in `app.py`:
-    Open `app.py` and find the line:
-    ```python
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:YourPassword@localhost:5432/ewaste_db'
+4.  **Create a `.env` file**:
+    Create a file named `.env` in the root directory and add the following:
+    ```env
+    DATABASE_URI=postgresql://postgres:YourPassword@localhost:5432/ewaste_db
+    SECRET_KEY=your_secret_key_here
+    GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
     ```
-    Replace `YourPassword` with your actual PostgreSQL password.
+    *Replace `YourPassword`, `your_secret_key_here`, and `your_google_maps_api_key_here` with your actual values.*
 
 ### 5. Run the Application
 ```bash
@@ -113,9 +115,9 @@ The application will start at `http://localhost:5000`.
 
 ## ⚠️ Troubleshooting
 
-*   **Database Connection Error**: Double-check your username, password, and database name in `app.py`. Ensure PostgreSQL service is running.
+*   **Database Connection Error**: Double-check your username, password, and database name in your `.env` file. Ensure PostgreSQL service is running.
 *   **PostGIS Error**: Make sure you ran `CREATE EXTENSION postgis;` in your `ewaste_db`.
 *   **Map Not Loading**: Ensure you have an internet connection (Leaflet loads tiles from OpenStreetMap).
 
 ---
-*Developed for E-Waste Management Project*
+*Developed for E-Waste Management Platform*
